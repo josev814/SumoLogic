@@ -1,0 +1,12 @@
+[Unit]
+Description=SumoLogic Log Transferer
+Before=sshd.service
+
+[Service]
+Type=forking
+ExecStartPre=/bin/rm -f /var/run/sumologic.pid
+ExecStart=/usr/bin/sumologic.py --daemon
+PIDFile=/var/run/sumologic.pid
+
+[Install]
+WantedBy=multi-user.target

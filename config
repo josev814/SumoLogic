@@ -1,0 +1,24 @@
+[default]
+; This file gets overwritten on updates
+; Make changes to the config file in conf.d not this one!!
+; To override make an entry in the conf.d/config file under the appropriate section
+debug = False
+; This is where the offset directory is saved that keeps track of log file offsets
+work_dir = /var/lib/sumologic
+; Time can be an integer for seconds or a string such as 1m, 1h, 1d
+; This is for how often to read new lines from the log files, Default is 30 seconds (30s)
+daemon_sleep = 30s
+; This is for how often to send to SumoLogic, Default is 5 minutes (5m)
+sync_interval = 5m
+
+[system_logs]
+syslog_log = /var/log/syslog
+dpkg_log = /var/log/dpkg.log
+apt_log = /var/log/apt
+auth_log = /var/log/auth.log
+cron_log = /var/log/cron.log
+daemon_log = /var/log/daemon.log
+mail_warn_log = /var/log/mail.warn
+mail_error_log = /var/log/mail.err
+messages_log = /var/log/messages
+user_log = /var/log/user.log

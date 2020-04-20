@@ -1,0 +1,35 @@
+.TH SUMOLOGIC "20" "April 2020" "SumoLogic version: 1.0" "User Commands"
+.SH NAME
+SumoLogic \- version: 1.0
+.SH DESCRIPTION
+.B SumoLogic
+is a python program that monitors log files and transfers them to defined endpoints.
+
+Usage:
+/usr/sbin/sumologic [ \fB\-c\fR configfile | \fB\-\-config\fR=\fIconfigfile]\fR [ \fB\-u\fR userconfigfile | \fB\-\-user_config\fR=\fIuserconfigfile]\fR [\-i | \fB\-\-ignore]\fR [\-l | \fB\-\-unlock]\fR [\-\-daemon][\-\-version]
+.HP
+\fB\-\-config\fR: The configuration file to use, typically /etc/sumologic/config
+.HP
+\fB\-\-user_config\fR: The override user configuration file to use, typically /etc/sumologic/config.d/config
+.HP
+\fB\-\-ignore\fR: Ignore last processed offset (start processing from beginning)
+.HP
+\fB\-\-unlock\fR: if lockfile exists, remove it and run as normal
+.HP
+\fB\-\-daemon\fR: run SumoLogic in daemon mode
+.HP
+\fB\-\-foreground\fR: run SumoLogic in foreground mode
+.HP
+\fB\-\-version\fR: Prints the version of SumoLogic and exits
+.PP
+Note: multiple log files can be processed.  If multiple files are provided, \fB\-\-ignore\fR is implied
+
+
+.SH "SEE ALSO"
+Please refer to https://github.com/josev814/SumoLogic for full documentation.
+.SH AUTHOR
+.B SumoLogic
+was written by Jose' Vargas <josev814@gmail.com>
+.PP
+This manual page was written by Jose' Vargas <josev814@gmail.com>
+for the Debian project (but may be used by others).
