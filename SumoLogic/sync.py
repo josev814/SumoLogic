@@ -59,7 +59,7 @@ class Sync(object):
 
     def __send_new_data(self, lines, endpoint):
         try:
-            zipped_file, zipped_data = self.__zipped_temp_data(lines)
+            zipped_data = self.__zipped_temp_data(lines)
             r = requests.post(
                 url=endpoint,
                 data=zipped_data,
@@ -70,7 +70,6 @@ class Sync(object):
                 self.log_message.send_message('error', 'Failure Reply From Sumo: {}'.format(r.content), True)
 
             del zipped_data
-            del zipped_file
             self.log_message.send_message('debug', 'Sent gzip data to SumoLogic')
         except Exception as e:
             self.log_message.send_message(
@@ -81,10 +80,8 @@ class Sync(object):
 
     def __zipped_temp_data(self, lines):
         try:
-            uid = uuid4()
-            uid_file = ospj(self.__work_dir, '{}.gz'.format(uid))
             fgz = BytesIO()
-            with gzip.GzipFile(filename=uid_file, mode='wb', compresslevel=9, fileobj=fgz) as gh:
+            with gzip.GzipFile(mode='wb', compresslevel=9, fileobj=fgz) as gh:
                 with TextIOWrapper(gh, encoding='utf-8') as enc:
                     enc.writelines(lines)
         except Exception as e:
@@ -94,4 +91,4 @@ class Sync(object):
                 True
             )
             print(sys.exc_info())
-        return uid_file, fgz.getvalue()
+        return fgz.getvalue()

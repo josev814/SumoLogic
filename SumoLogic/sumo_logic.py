@@ -258,8 +258,10 @@ class SumoLogic(object):
         except IOError:
             pass
 
-        for line in fp:
+        line = fp.readline()
+        while line:
             self.sync_lines.append(line)
+            line = fp.readline()
 
         offset = fp.tell()
         fp.close()
