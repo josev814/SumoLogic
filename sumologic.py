@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
-from os.path import join as ospj
 import os
-import platform
+from platform import node
 import sys
-import time
 from uuid import uuid4
-import multiprocessing
+from multiprocessing import Process
 from SumoLogic.constants import *
 sys.path.insert(0, SUMOLOGIC_SHARE)
 
-import getopt
-from getopt import GetoptError
+from getopt import getopt, GetoptError
 import traceback
 
 from SumoLogic.log_message import LogMessage
@@ -52,7 +49,7 @@ def create_default_dirs(dirs=[]):
 
 if __name__ == '__main__':
     config_file = os.path.join(CONFIG_DIR, CONFIG_FILE)
-    user_config_file = ospj(USER_CONFIG_DIR, CONFIG_FILE)
+    user_config_file = os.path.join(USER_CONFIG_DIR, CONFIG_FILE)
     create_default_dirs([CONFIG_DIR, USER_CONFIG_DIR, SUMOLOGIC_SHARE])
     ignore_offset = False
     daemon = False
@@ -60,7 +57,7 @@ if __name__ == '__main__':
     unlock = False
     args = sys.argv[1:]
     try:
-        (opts, getopts) = getopt.getopt(
+        (opts, getopts) = getopt(
             args,
             'c:u:fdil?hVv',
             ["ignore", "help", "config=", "user_config=", "version", "daemon", "foreground", "unlock"]
@@ -68,15 +65,15 @@ if __name__ == '__main__':
     except GetoptError:
         print("\nInvalid command line option detected.")
         usage()
-        sys.exit(1)
+        exit(1)
 
     for opt, arg in opts:
         if opt in ('-v', '-V', '--version'):
             print('SumoLogic version: {}'.format(VERSION))
-            sys.exit(0)
+            exit(0)
         if opt in ('-h', '-?', '--help'):
             usage()
-            sys.exit(0)
+            exit(0)
         if opt in ('-i', '--ignore'):
             ignore_offset = True
         if opt in ('-c', '--config'):
@@ -93,21 +90,23 @@ if __name__ == '__main__':
 
     # This is generally expected to be in the environment, but there's no
     # non-hackish way to get systemd to set it, so just hack it in here.
-    os.environ['HOSTNAME'] = platform.node()
+    os.environ['HOSTNAME'] = node()
 
     prefs = SumoConfig(config_file, user_config_file)
+    print(prefs)
 
     first_time = 0
     try:
         work_dir = prefs.get_value('default', 'work_dir')
-        offset_dir = ospj(work_dir, OFFSETS_DIR)
+        print(work_dir)
+        offset_dir = os.path.join(work_dir, OFFSETS_DIR)
         if not os.path.exists(work_dir) or not os.path.exists(offset_dir) or not os.path.exists(PID_DIRECTORY):
             create_default_dirs([work_dir, offset_dir, PID_DIRECTORY])
             first_time = 1
     except Exception as e:
         if e[0] != 17:
             print(e)
-            sys.exit(1)
+            exit(1)
 
     debug_mode = False
     if is_true(prefs.get_value('default', 'debug')):
@@ -132,7 +131,7 @@ if __name__ == '__main__':
             child = uuid4()
             logger.send_message('debug', 'Starting new child for {} as child {}'.format(f['log_file'], child))
             logger.send_message('debug', "Child: {} - {}".format(child, f['log_file']))
-            CHILD_PID_FILE = ospj(PID_DIRECTORY, 'child-{}.pid'.format(child))
+            CHILD_PID_FILE = os.path.join(PID_DIRECTORY, 'child-{}.pid'.format(child))
             child_lock_file = LockFile(CHILD_PID_FILE)
             if unlock:
                 if os.path.isfile(CHILD_PID_FILE):
@@ -149,7 +148,7 @@ if __name__ == '__main__':
                     daemon,
                     foreground)
             else: #foreground
-                dh = multiprocessing.Process(
+                dh = Process(
                     target=SumoLogic,
                     kwargs={
                         'config': config_file,
