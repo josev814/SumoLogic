@@ -4,6 +4,7 @@ import logging
 from logging import handlers
 from .constants import SUMO_LOGFILE, DAEMON_LOG_TIME_FORMAT, DAEMON_LOG_MESSAGE_FORMAT
 
+
 class LogMessage(object):
 
     def __init__(self, logger='SumoLogic'):
@@ -28,7 +29,7 @@ class LogMessage(object):
             self.log_error(message)
         print('{}: {}'.format(mtype, message))
         if stop:
-            self.teardownLogger()
+            self.teardown_logger()
             sys.exit(1)
 
     def get_level(self):
@@ -65,6 +66,6 @@ class LogMessage(object):
             print('Unable to access {} with IO ERROR: {}'.format(self.log_file, e))
             exit(1)
 
-    def teardownLogger(self):
+    def teardown_logger(self):
         logging.handlers.RotatingFileHandler(self.log_file).close()
         logging.shutdown()
