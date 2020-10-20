@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-from os.path import join as ospj
+import os
+
 
 #################################################################################
 #        System Level Information Needed                                        #
 #################################################################################
 PID_DIRECTORY = r'/var/run/sumologic'
-PID_FILE = ospj(PID_DIRECTORY, 'sumologic.pid')
+PID_FILE = os.path.join(PID_DIRECTORY, 'sumologic.pid')
 SUMO_LOGFILE = r'/var/log/sumologic'
 CONFIG_DIR = r'/etc/sumologic'
 CONFIG_FILE = 'config'
-USER_CONFIG_DIR = ospj(CONFIG_DIR,'config.d')
+USER_CONFIG_DIR = os.path.join(CONFIG_DIR, 'config.d')
 SUMOLOGIC_SHARE = '/usr/share/sumologic'
 
 #################################################################################
@@ -37,4 +38,3 @@ TIME_SPEC_LOOKUP = {
 SYSLOG_REPORT = False
 DAEMON_LOG_TIME_FORMAT = None
 DAEMON_LOG_MESSAGE_FORMAT = '%(asctime)s - %(name)-12s: %(levelname)-8s %(message)s'
-
