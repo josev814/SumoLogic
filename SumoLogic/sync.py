@@ -1,15 +1,13 @@
 # Built-ins
-import time
-from os import unlink
-from os.path import join as ospj
-import sys
-import gzip
+from time import time
+from sys import exc_info
+from gzip import GzipFile
 from io import BytesIO, TextIOWrapper
-import socket
+from socket import gethostname
 
 # Third Party
 import requests
-from uuid import uuid4
+import urllib3
 
 # Package Libraries
 from .log_message import LogMessage
@@ -25,12 +23,12 @@ class Sync(object):
         self.last_sync = last_sync
 
     def check_to_sync(self, sync_interval):
-        if int(time.time()) - self.last_sync >= sync_interval:
+        if int(time()) - self.last_sync >= sync_interval:
             return True
         return False
 
     def update_last_sync_time(self):
-        self.last_sync = int(time.time())
+        self.last_sync = int(time())
 
     def send_new_logdata(self, new_log_lines, sumo_info):
         self.log_message.send_message(
@@ -53,23 +51,30 @@ class Sync(object):
             return False
         except Exception as e:
             self.log_message.send_message('exception', e)
-            # print(sys.exc_info())
+            # print(exc_info())
             return False
         return True
 
     def __send_new_data(self, lines, endpoint):
         try:
             zipped_data = self.__zipped_temp_data(lines)
-            r = requests.post(
+            session = requests.Session()
+            retry = urllib3.util.retry.Retry(connect=5, backoff_factor=1)
+            adapter = requests.adapters.HTTPAdapter(max_retries=retry)
+            for protocol in ['http', 'https']:
+                session.mount('{}://'.format(protocol), adapter)
+            r = session.post(
                 url=endpoint,
                 data=zipped_data,
-                headers={'Content-Encoding': 'gzip', 'X-Sumo-Host': socket.gethostname()}
+                headers={'Content-Encoding': 'gzip', 'X-Sumo-Host': gethostname()}
+
             )
             if r.status_code != 200:
                 self.log_message.send_message('error', 'Status Code: {}'.format(r.status_code))
                 self.log_message.send_message('error', 'Failure Reply From Sumo: {}'.format(r.content), True)
 
             del zipped_data
+            del r
             self.log_message.send_message('debug', 'Sent gzip data to SumoLogic')
         except Exception as e:
             self.log_message.send_message(
@@ -81,14 +86,15 @@ class Sync(object):
     def __zipped_temp_data(self, lines):
         try:
             fgz = BytesIO()
-            with gzip.GzipFile(mode='wb', compresslevel=9, fileobj=fgz) as gh:
+            with GzipFile(mode='wb', compresslevel=9, fileobj=fgz) as gh:
                 with TextIOWrapper(gh, encoding='utf-8') as enc:
-                    enc.writelines(lines)
+                    for line in lines:
+                        enc.write(line)
         except Exception as e:
             self.log_message.send_message(
                 'exception',
                 '__zipped_temp_data Error: {}'.format(e),
                 True
             )
-            print(sys.exc_info())
+            print(exc_info())
         return fgz.getvalue()
