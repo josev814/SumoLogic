@@ -1,6 +1,5 @@
 from os.path import join as ospj
 from .log_message import LogMessage
-from .constants import OFFSETS_DIR
 
 
 class FileTracker(object):
