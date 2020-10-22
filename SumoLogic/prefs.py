@@ -1,9 +1,14 @@
-import configparser
+# 45Kb
+from SumoLogic.jvconfigparser import ConfigParser
+#from configparser import ConfigParser
+# 8.6Kb
 import traceback
 import os
-from .log_message import LogMessage
+#1.8Kb
+from SumoLogic.log_message import LogMessage
 
 
+# 7.3Kb Kb
 class SumoConfig(object):
     active_endpoints = []
 
@@ -11,16 +16,18 @@ class SumoConfig(object):
         self.logger = LogMessage('SumoConfig')
         self.config = config
         self.user_config = user_config
-        self.cp = configparser.ConfigParser(allow_no_value=True)
-        self.ucp = configparser.ConfigParser(allow_no_value=True)
+        self.cp = ConfigParser(allow_no_value=True)
+        self.ucp = ConfigParser(allow_no_value=True)
         self.setup()
         self.__get_config()
 
     def setup(self):
         if not os.path.isfile(self.config):
             self.logger.send_message('error', 'Missing Required default config file:: {}'.format(self.config), True)
+            print('no default file')
         if not os.path.isfile(self.user_config):
             self.setup_user_config_defaults()
+            print('no user file')
 
     def __get_config(self):
         self.cp.read(self.config)
@@ -29,7 +36,6 @@ class SumoConfig(object):
     def reload_config(self):
         self.__get_config()
         self.get_active_log_files()
-
 
     def setup_user_config_defaults(self):
         message = 'Initial Setup of SumoLogic'
@@ -75,13 +81,14 @@ class SumoConfig(object):
                 traceback.print_exc()
             )
             self.logger.send_message(mtype='error', message=message, stop=True)
-    
+
     def get_value(self, section, option):
         value = None
         if self.cp.has_section(section) and self.cp.has_option(section, option):
             value = self.cp.get(section, option)
         # user config overrides default
         if self.ucp.has_section(section) and self.ucp.has_option(section, option):
+            print('ucp:', option)
             value = self.ucp.get(section, option)
         return value
 
@@ -144,14 +151,22 @@ class SumoConfig(object):
         self.active_endpoints = []
         sumo_info = self.ucp['sumo_info']
         for key in sumo_info:
-            endpoint = self.get_value('sumo_info', key)
+            if isinstance(key, str) and key.startswith(';'):
+                # ignoring comments
+                continue
+            section_keys = list(key.keys())
+            if len(section_keys) > 1:
+                self.logger.log_error('Too many log file declarations within a section option')
+                exit(1)
+            find_key = section_keys[0]
+            endpoint = self.get_value('sumo_info', find_key)
             if endpoint == '' or endpoint is None:
                 continue
-            if key.startswith('apache'):
-                self.__set_apache_endpoint(key, endpoint)
+            if find_key.startswith('apache'):
+                self.__set_apache_endpoint(find_key, endpoint)
             else:
-                log_file = self.__get_log_file(key)
-                self.__set_endpoint(key, endpoint, log_file)
+                log_file = self.__get_log_file(find_key)
+                self.__set_endpoint(find_key, endpoint, log_file)
         return self.active_endpoints
 
     def __set_apache_endpoint(self, option, endpoint):
