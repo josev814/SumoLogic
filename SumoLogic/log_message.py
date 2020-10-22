@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 import sys
+import os
 import logging
 from logging import handlers
-from .constants import SUMO_LOGFILE, DAEMON_LOG_TIME_FORMAT, DAEMON_LOG_MESSAGE_FORMAT
+from SumoLogic.constants import SUMO_LOGFILE, DAEMON_LOG_TIME_FORMAT, DAEMON_LOG_MESSAGE_FORMAT
 
 
 class LogMessage(object):
@@ -15,6 +16,21 @@ class LogMessage(object):
         self.log_warning = logging.getLogger(self.logger).warning
         self.log_exception = logging.getLogger(self.logger).warning
         self.log_file = SUMO_LOGFILE
+        if not os.path.isfile(self.log_file):
+            self.make_log_file()
+
+    def make_log_file(self):
+        path_arr = self.log_file.split('/')
+        full_path = ''
+        print(path_arr)
+        for i in range(len(path_arr) - 1):
+            full_path += path_arr[i] + '/'
+            if path_arr[i] != '' and not os.path.isdir(full_path):
+                os.mkdir(full_path)
+        with open(self.log_file) as ph:
+            ph.write('')
+
+
 
     def send_message(self, mtype=None, message=None, stop=False):
         if mtype == 'debug':
