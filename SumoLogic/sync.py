@@ -1,13 +1,15 @@
 # Built-ins
-from time import time
-from sys import exc_info
-from gzip import GzipFile
-from io import BytesIO, TextIOWrapper
-from socket import gethostname
+from time import time  # 0.0 MB
+from sys import exc_info  # 0.0 MB
+from gzip import GzipFile  # 0.2734375
+from io import BytesIO, TextIOWrapper  # 0.0
+from socket import gethostname  # 0.0
 
 # Third Party
-import requests
-import urllib3
+#import requests
+from requests import Session, adapters  # 3.58203125
+#import urllib3
+from urllib3.util.retry import Retry  #0.0
 
 # Package Libraries
 from .log_message import LogMessage
@@ -58,9 +60,9 @@ class Sync(object):
     def __send_new_data(self, lines, endpoint):
         try:
             zipped_data = self.__zipped_temp_data(lines)
-            session = requests.Session()
-            retry = urllib3.util.retry.Retry(connect=5, backoff_factor=1)
-            adapter = requests.adapters.HTTPAdapter(max_retries=retry)
+            session = Session()
+            retry = Retry(backoff_factor=10, total=5, status_forcelist=[429, 500, 502, 503, 504])
+            adapter = adapters.HTTPAdapter(max_retries=retry)
             for protocol in ['http', 'https']:
                 session.mount('{}://'.format(protocol), adapter)
             r = session.post(
