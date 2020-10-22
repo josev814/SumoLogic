@@ -3,7 +3,9 @@ from .regex import TIME_SPEC_REGEX
 
 
 def is_true(s):
-    return s.lower() in ('1', 't', 'true', 'y', 'yes')
+    if s is True or s.lower() in ('1', 't', 'true', 'y', 'yes'):
+        return True
+    return False
 
 
 def is_false(s):
