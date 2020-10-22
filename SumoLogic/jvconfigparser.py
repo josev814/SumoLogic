@@ -92,21 +92,24 @@ class ConfigParser(object):
 
     def get_value(self, section, option):
         value = None
-        print('Section: {}   Option: {}'.format(section, option))
         if self.has_section(section):
+            print(option)
             for option_dict in self.config_dict[section]:
-                if not isinstance(option_dict, str) and isinstance(option, dict):
-                    for key in option.keys():
-                        option = key
-                        #just getting first key
-                        break
-                    print(option_dict)
-                    print(option)
-                    print(option_dict.get(option))
-                    if option in option_dict:
-                        value = option_dict.get(option)
-                        if value is not None:
-                            break
+                if not isinstance(option_dict, str) and isinstance(option_dict, dict):
+                    try:
+                        if option in option_dict:
+                            value = option_dict.get(option)
+                            if value is not None:
+                                break
+                    except Exception as e:
+                        import sys
+                        print(sys.exc_info())
+                        print(e)
+                        print(option)
+                        print(option_dict)
+                        print(type(option_dict), end='\n\n')
+                        exit(1)
+        print('Returning:{}'.format(value))
         return value
 
     def add_section(self, section):
@@ -117,7 +120,7 @@ class ConfigParser(object):
     Hack to make compatible with configparser
     """
     def get(self, section, option):
-        self.get_value(section, option)
+        return self.get_value(section, option)
 
     def set(self, section, option, value):
         self.add_option(section, option, value)
