@@ -93,12 +93,10 @@ if __name__ == '__main__':
     os.environ['HOSTNAME'] = node()
 
     prefs = SumoConfig(config_file, user_config_file)
-    print(prefs)
 
     first_time = 0
     try:
         work_dir = prefs.get_value('default', 'work_dir')
-        print(work_dir)
         offset_dir = os.path.join(work_dir, OFFSETS_DIR)
         if not os.path.exists(work_dir) or not os.path.exists(offset_dir) or not os.path.exists(PID_DIRECTORY):
             create_default_dirs([work_dir, offset_dir, PID_DIRECTORY])
